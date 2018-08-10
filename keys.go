@@ -15,17 +15,17 @@ import (
 
 //Key type
 type Key struct {
-	age           float64
-	name          string
-	id            string
-	provider      string
-	lifeRemaining float64
+	Age           float64
+	Name          string
+	ID            string
+	Provider      string
+	LifeRemaining float64
 }
 
 //Provider type
 type Provider struct {
-	provider   string
-	gcpProject string
+	Provider   string
+	GcpProject string
 }
 
 const (
@@ -41,9 +41,9 @@ const (
 //Keys returns a generic key slice of potentially multiple provider keys
 func Keys(providers []Provider) (keys []Key) {
 	for _, providerRequest := range providers {
-		switch providerRequest.provider {
+		switch providerRequest.Provider {
 		case "gcp":
-			keys = appendSlice(keys, gcpKeys(providerRequest.gcpProject))
+			keys = appendSlice(keys, gcpKeys(providerRequest.GcpProject))
 		case "aws":
 			keys = appendSlice(keys, awsKeys())
 		default:
