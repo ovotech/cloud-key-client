@@ -13,8 +13,8 @@ import (
 	gcpiam "google.golang.org/api/iam/v1"
 )
 
-//type key
-type key struct {
+//Key type
+type Key struct {
 	age           float64
 	name          string
 	id            string
@@ -38,7 +38,7 @@ const (
 )
 
 //Keys returns a generic key slice of potentially multiple provider keys
-func Keys(providers []providerRequest) (keys []key) {
+func Keys(providers []providerRequest) (keys []Key) {
 	for _, providerRequest := range providers {
 		switch providerRequest.provider {
 		case "gcp":
@@ -53,7 +53,7 @@ func Keys(providers []providerRequest) (keys []key) {
 }
 
 //gcpKeys returns a slice of generic keys with provider=gcp
-func gcpKeys(gcpProject string) (keys []key) {
+func gcpKeys(gcpProject string) (keys []Key) {
 	ctx := context.Background()
 	client, err := google.DefaultClient(ctx, gcpiam.CloudPlatformScope)
 	check(err)
@@ -68,7 +68,7 @@ func gcpKeys(gcpProject string) (keys []key) {
 			keyAge := minsSince(parseTime(gcpTimeFormat, gcpKey.ValidAfterTime))
 			keyMinsToExpiry := minsSince(parseTime(gcpTimeFormat,
 				gcpKey.ValidBeforeTime))
-			keys = append(keys, key{keyAge,
+			keys = append(keys, Key{keyAge,
 				subString(gcpKey.Name, gcpServiceAccountPrefix,
 					gcpServiceAccountSuffix),
 				subString(gcpKey.Name, gcpKeyPrefix, gcpKeySuffix),
@@ -99,7 +99,7 @@ func gcpServiceAccountKeys(project, email string, service gcpiam.Service) (keys 
 }
 
 //awskeys returns a slice of generic keys with provider=aws
-func awsKeys() (keys []key) {
+func awsKeys() (keys []Key) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
@@ -118,7 +118,7 @@ func awsKeys() (keys []key) {
 		check(err)
 		for _, awsKey := range result.AccessKeyMetadata {
 			keys = append(keys,
-				key{minsSince(*awsKey.CreateDate),
+				Key{minsSince(*awsKey.CreateDate),
 					*awsKey.UserName, *awsKey.AccessKeyId, awsProviderString, 0})
 		}
 	}
@@ -126,7 +126,7 @@ func awsKeys() (keys []key) {
 }
 
 //appendSlice appends the 2nd slice to the 1st, and returns the resulting slice
-func appendSlice(keys, keysToAdd []key) []key {
+func appendSlice(keys, keysToAdd []Key) []Key {
 	for _, keyToAdd := range keysToAdd {
 		keys = append(keys, keyToAdd)
 	}
