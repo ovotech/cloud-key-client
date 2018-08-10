@@ -37,8 +37,8 @@ const (
 	awsProviderString       = "aws"
 )
 
-//keys returns a generic key slice of potentially multiple provider keys
-func keys(providers []providerRequest) (keys []key) {
+//Keys returns a generic key slice of potentially multiple provider keys
+func Keys(providers []providerRequest) (keys []key) {
 	for _, providerRequest := range providers {
 		switch providerRequest.provider {
 		case "gcp":
