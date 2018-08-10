@@ -22,7 +22,8 @@ type Key struct {
 	lifeRemaining float64
 }
 
-type providerRequest struct {
+//Provider type
+type Provider struct {
 	provider   string
 	gcpProject string
 }
@@ -38,7 +39,7 @@ const (
 )
 
 //Keys returns a generic key slice of potentially multiple provider keys
-func Keys(providers []providerRequest) (keys []Key) {
+func Keys(providers []Provider) (keys []Key) {
 	for _, providerRequest := range providers {
 		switch providerRequest.provider {
 		case "gcp":
