@@ -3,6 +3,7 @@ package keys
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -61,14 +62,11 @@ func gcpKeys(gcpProject string) (keys []Key) {
 	service, err := gcpiam.New(client)
 	check(err)
 	for _, acc := range gcpServiceAccounts(gcpProject, *service) {
-		for _, gcpKey := range gcpServiceAccountKeys(gcpProject, acc.Email, *service) {
-			//only iterate over keys that have a mins-to-expiry, or are of an age,
-			// above a specific threshold, to differentiate between GCP-managed
-			// and User-managed keys:
-			// https://cloud.google.com/iam/docs/understanding-service-accounts
+		for _, gcpKey := range gcpServiceAccountKeys(gcpProject, acc.Email,
+			*service) {
 			keyAge := minsSince(parseTime(gcpTimeFormat, gcpKey.ValidAfterTime))
-			keyMinsToExpiry := minsSince(parseTime(gcpTimeFormat,
-				gcpKey.ValidBeforeTime))
+			keyMinsToExpiry := math.Abs(minsSince(parseTime(gcpTimeFormat,
+				gcpKey.ValidBeforeTime)))
 			keys = append(keys, Key{keyAge,
 				subString(gcpKey.Name, gcpServiceAccountPrefix,
 					gcpServiceAccountSuffix),
@@ -111,7 +109,6 @@ func awsKeys() (keys []Key) {
 	})
 	check(err)
 	for _, user := range userResult.Users {
-		fmt.Println(*user.UserId)
 		result, err := svc.ListAccessKeys(&awsiam.ListAccessKeysInput{
 			MaxItems: aws.Int64(5),
 			UserName: aws.String(*user.UserName),
