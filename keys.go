@@ -115,9 +115,11 @@ func awsKeys() (keys []Key) {
 		})
 		check(err)
 		for _, awsKey := range result.AccessKeyMetadata {
+			keyID := *awsKey.AccessKeyId
 			keys = append(keys,
 				Key{minsSince(*awsKey.CreateDate),
-					*awsKey.UserName, *awsKey.AccessKeyId, awsProviderString, 0})
+					strings.Join([]string{*awsKey.UserName, keyID[len(keyID)-3:]}, "_"),
+					keyID, awsProviderString, 0})
 		}
 	}
 	return
