@@ -37,6 +37,7 @@ const (
 	gcpKeySuffix            = ""
 	gcpProviderString       = "gcp"
 	awsProviderString       = "aws"
+	awsNumIDValuesInName    = 6
 )
 
 //Keys returns a generic key slice of potentially multiple provider keys
@@ -118,7 +119,8 @@ func awsKeys() (keys []Key) {
 			keyID := *awsKey.AccessKeyId
 			keys = append(keys,
 				Key{minsSince(*awsKey.CreateDate),
-					strings.Join([]string{*awsKey.UserName, keyID[len(keyID)-3:]}, "_"),
+					strings.Join([]string{*awsKey.UserName,
+						keyID[len(keyID)-awsNumIDValuesInName:]}, "_"),
 					keyID, awsProviderString, 0})
 		}
 	}
