@@ -37,7 +37,7 @@ const (
 	gcpKeySuffix            = ""
 	gcpProviderString       = "gcp"
 	awsProviderString       = "aws"
-	awsNumIDValuesInName    = 6
+	numIDValuesInName       = 6
 )
 
 //Keys returns a generic key slice of potentially multiple provider keys
@@ -66,12 +66,15 @@ func gcpKeys(gcpProject string) (keys []Key) {
 		for _, gcpKey := range gcpServiceAccountKeys(gcpProject, acc.Email,
 			*service) {
 			keyAge := minsSince(parseTime(gcpTimeFormat, gcpKey.ValidAfterTime))
+			keyID := subString(gcpKey.Name, gcpKeyPrefix, gcpKeySuffix)
 			keyMinsToExpiry := math.Abs(minsSince(parseTime(gcpTimeFormat,
 				gcpKey.ValidBeforeTime)))
+			serviceAccountName := subString(gcpKey.Name, gcpServiceAccountPrefix,
+				gcpServiceAccountSuffix)
 			keys = append(keys, Key{keyAge,
-				subString(gcpKey.Name, gcpServiceAccountPrefix,
-					gcpServiceAccountSuffix),
-				subString(gcpKey.Name, gcpKeyPrefix, gcpKeySuffix),
+				strings.Join([]string{serviceAccountName,
+					keyID[len(keyID)-numIDValuesInName:]}, "_"),
+				keyID,
 				gcpProviderString, keyMinsToExpiry})
 		}
 	}
@@ -92,6 +95,7 @@ func gcpServiceAccounts(project string, service gcpiam.Service) (accs []*gcpiam.
 func gcpServiceAccountKeys(project, email string, service gcpiam.Service) (keys []*gcpiam.ServiceAccountKey) {
 	res, err := service.Projects.ServiceAccounts.Keys.
 		List(fmt.Sprintf("projects/%s/serviceAccounts/%s", project, email)).
+		KeyTypes("USER_MANAGED").
 		Do()
 	check(err)
 	keys = res.Keys
@@ -120,7 +124,7 @@ func awsKeys() (keys []Key) {
 			keys = append(keys,
 				Key{minsSince(*awsKey.CreateDate),
 					strings.Join([]string{*awsKey.UserName,
-						keyID[len(keyID)-awsNumIDValuesInName:]}, "_"),
+						keyID[len(keyID)-numIDValuesInName:]}, "_"),
 					keyID, awsProviderString, 0})
 		}
 	}
