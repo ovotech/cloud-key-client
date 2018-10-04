@@ -95,6 +95,7 @@ func gcpServiceAccounts(project string, service gcpiam.Service) (accs []*gcpiam.
 func gcpServiceAccountKeys(project, email string, service gcpiam.Service) (keys []*gcpiam.ServiceAccountKey) {
 	res, err := service.Projects.ServiceAccounts.Keys.
 		List(fmt.Sprintf("projects/%s/serviceAccounts/%s", project, email)).
+		KeyTypes("USER_MANAGED").
 		Do()
 	check(err)
 	keys = res.Keys
