@@ -32,6 +32,7 @@ func gcpKeys(gcpProject string) (keys []Key) {
 	return
 }
 
+//gcpClient returns a new GCP IAM client
 func gcpClient() (service *gcpiam.Service) {
 	ctx := context.Background()
 	var err error
@@ -63,23 +64,45 @@ func gcpServiceAccountKeys(name string, service gcpiam.Service) (keys []*gcpiam.
 	return
 }
 
+//gcpProjectName returns a string of the format "projects/{PROJECT}"
 func gcpProjectName(project string) (name string) {
 	name = fmt.Sprintf("projects/%s", project)
 	return
 }
 
-func gcpServiceAccountName(project, email string) (name string) {
-	name = fmt.Sprintf("projects/%s/serviceAccounts/%s", project, email)
+//gcpServiceAccountName returns a string of the format:
+//  "projects/{PROJECT}/serviceAccounts/{SA}"
+func gcpServiceAccountName(project, sa string) (name string) {
+	name = fmt.Sprintf("%s/serviceAccounts/%s", gcpProjectName(project), sa)
 	return
 }
 
-func createKey(project, sa string) (privateKeyData string) {
-	csakr := gcpiam.CreateServiceAccountKeyRequest{}
-	name := gcpServiceAccountName(project, sa)
+//gcpServiceAccountKeyName returns a string of the format:
+//  "projects/{PROJECT}/serviceAccounts/{SA}/keys/{KEY}"
+func gcpServiceAccountKeyName(project, sa, key string) (name string) {
+	name = fmt.Sprintf("%s/keys/%s", gcpServiceAccountName(project, sa), key)
+	return
+}
+
+//GcpCreateKey creates a new service account key, returning the new key's
+//private data if the creation was a success (nil if creation failed), and an
+//error (nil upon success)
+func GcpCreateKey(project, sa string) (privateKeyData string, err error) {
 	key, err := gcpClient().Projects.ServiceAccounts.Keys.
-		Create(name, &csakr).
+		Create(gcpServiceAccountName(project, sa),
+			&gcpiam.CreateServiceAccountKeyRequest{}).
 		Do()
-	check(err)
-	privateKeyData = key.PrivateKeyData
+	if err != nil {
+		privateKeyData = key.PrivateKeyData
+	}
+	return
+}
+
+//GcpDeleteKey deletes the specified service account key, and returns an error
+//(nil upon successful deletion)
+func GcpDeleteKey(project, sa, key string) (err error) {
+	_, err = gcpClient().Projects.ServiceAccounts.Keys.
+		Delete(gcpServiceAccountKeyName(project, sa, key)).
+		Do()
 	return
 }
