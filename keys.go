@@ -7,11 +7,12 @@ import (
 
 //Key type
 type Key struct {
+	Account       string
 	Age           float64
-	Name          string
 	ID            string
-	Provider      string
 	LifeRemaining float64
+	Name          string
+	Provider      Provider
 }
 
 //Provider type
@@ -35,13 +36,41 @@ const (
 func Keys(providers []Provider) (keys []Key) {
 	for _, providerRequest := range providers {
 		switch providerRequest.Provider {
-		case "gcp":
+		case gcpProviderString:
 			keys = appendSlice(keys, gcpKeys(providerRequest.GcpProject))
-		case "aws":
+		case awsProviderString:
 			keys = appendSlice(keys, awsKeys())
 		default:
 			panic("No valid providers specified. Must be gcp|aws")
 		}
+	}
+	return
+}
+
+//CreateKeyFromScratch creates a new key from just provider and account
+//parameters (an existing key is not required)
+func CreateKeyFromScratch(provider Provider, account string) (newKey string, err error) {
+	switch provider.Provider {
+	case gcpProviderString:
+		newKey, err = gcpCreateKey(provider.GcpProject, account)
+	}
+	return
+}
+
+//CreateKey creates a new key using details of the provided key
+func CreateKey(key Key) (newKey string, err error) {
+	switch key.Provider.Provider {
+	case gcpProviderString:
+		newKey, err = gcpCreateKey(key.Provider.GcpProject, key.Account)
+	}
+	return
+}
+
+//DeleteKey deletes the specified key
+func DeleteKey(key Key) (err error) {
+	switch key.Provider.Provider {
+	case gcpProviderString:
+		err = gcpDeleteKey(key.Provider.GcpProject, key.Account, key.ID)
 	}
 	return
 }
