@@ -22,11 +22,15 @@ func gcpKeys(gcpProject string) (keys []Key) {
 				gcpKey.ValidBeforeTime)))
 			serviceAccountName := subString(gcpKey.Name, gcpServiceAccountPrefix,
 				gcpServiceAccountSuffix)
-			keys = append(keys, Key{keyAge,
+			keys = append(keys, Key{
+				serviceAccountName,
+				keyAge,
+				keyID,
+				keyMinsToExpiry,
 				strings.Join([]string{serviceAccountName,
 					keyID[len(keyID)-numIDValuesInName:]}, "_"),
-				keyID,
-				gcpProviderString, keyMinsToExpiry})
+				Provider{gcpProviderString, gcpProject},
+			})
 		}
 	}
 	return
@@ -87,9 +91,9 @@ func gcpServiceAccountKeyName(project, sa, key string) (name string) {
 //GcpCreateKey creates a new service account key, returning the new key's
 //private data if the creation was a success (nil if creation failed), and an
 //error (nil upon success)
-func GcpCreateKey(project, sa string) (privateKeyData string, err error) {
+func gcpCreateKey(project, account string) (privateKeyData string, err error) {
 	key, err := gcpClient().Projects.ServiceAccounts.Keys.
-		Create(gcpServiceAccountName(project, sa),
+		Create(gcpServiceAccountName(project, account),
 			&gcpiam.CreateServiceAccountKeyRequest{}).
 		Do()
 	if err != nil {
@@ -100,9 +104,9 @@ func GcpCreateKey(project, sa string) (privateKeyData string, err error) {
 
 //GcpDeleteKey deletes the specified service account key, and returns an error
 //(nil upon successful deletion)
-func GcpDeleteKey(project, sa, key string) (err error) {
+func gcpDeleteKey(project, account, keyID string) (err error) {
 	_, err = gcpClient().Projects.ServiceAccounts.Keys.
-		Delete(gcpServiceAccountKeyName(project, sa, key)).
+		Delete(gcpServiceAccountKeyName(project, account, keyID)).
 		Do()
 	return
 }
