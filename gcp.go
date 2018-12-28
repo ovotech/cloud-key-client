@@ -22,8 +22,10 @@ func gcpKeys(gcpProject string) (keys []Key) {
 				gcpKey.ValidBeforeTime)))
 			serviceAccountName := subString(gcpKey.Name, gcpServiceAccountPrefix,
 				gcpServiceAccountSuffix)
+			fullServiceAccountName := subString(gcpKey.Name, gcpServiceAccountPrefix, "/keys/")
 			keys = append(keys, Key{
 				serviceAccountName,
+				fullServiceAccountName,
 				keyAge,
 				keyID,
 				keyMinsToExpiry,
@@ -96,7 +98,7 @@ func gcpCreateKey(project, account string) (privateKeyData string, err error) {
 		Create(gcpServiceAccountName(project, account),
 			&gcpiam.CreateServiceAccountKeyRequest{}).
 		Do()
-	if err != nil {
+	if err == nil {
 		privateKeyData = key.PrivateKeyData
 	}
 	return

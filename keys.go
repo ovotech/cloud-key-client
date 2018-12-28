@@ -8,6 +8,7 @@ import (
 //Key type
 type Key struct {
 	Account       string
+	FullAccount   string
 	Age           float64
 	ID            string
 	LifeRemaining float64
@@ -61,7 +62,7 @@ func CreateKeyFromScratch(provider Provider, account string) (newKey string, err
 func CreateKey(key Key) (newKey string, err error) {
 	switch key.Provider.Provider {
 	case gcpProviderString:
-		newKey, err = gcpCreateKey(key.Provider.GcpProject, key.Account)
+		newKey, err = gcpCreateKey(key.Provider.GcpProject, key.FullAccount)
 	}
 	return
 }
@@ -70,7 +71,7 @@ func CreateKey(key Key) (newKey string, err error) {
 func DeleteKey(key Key) (err error) {
 	switch key.Provider.Provider {
 	case gcpProviderString:
-		err = gcpDeleteKey(key.Provider.GcpProject, key.Account, key.ID)
+		err = gcpDeleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
 	}
 	return
 }
