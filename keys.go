@@ -50,19 +50,19 @@ func Keys(providers []Provider) (keys []Key) {
 
 //CreateKeyFromScratch creates a new key from just provider and account
 //parameters (an existing key is not required)
-func CreateKeyFromScratch(provider Provider, account string) (newKey string, err error) {
+func CreateKeyFromScratch(provider Provider, account string) (keyID, newKey string, err error) {
 	switch provider.Provider {
 	case gcpProviderString:
-		newKey, err = gcpCreateKey(provider.GcpProject, account)
+		keyID, newKey, err = gcpCreateKey(provider.GcpProject, account)
 	}
 	return
 }
 
 //CreateKey creates a new key using details of the provided key
-func CreateKey(key Key) (newKey string, err error) {
+func CreateKey(key Key) (keyID, newKey string, err error) {
 	switch key.Provider.Provider {
 	case gcpProviderString:
-		newKey, err = gcpCreateKey(key.Provider.GcpProject, key.FullAccount)
+		keyID, newKey, err = gcpCreateKey(key.Provider.GcpProject, key.FullAccount)
 	}
 	return
 }
