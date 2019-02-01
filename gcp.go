@@ -93,13 +93,15 @@ func gcpServiceAccountKeyName(project, sa, key string) (name string) {
 //GcpCreateKey creates a new service account key, returning the new key's
 //private data if the creation was a success (nil if creation failed), and an
 //error (nil upon success)
-func gcpCreateKey(project, account string) (privateKeyData string, err error) {
+func gcpCreateKey(project, account string) (keyID, privateKeyData string, err error) {
 	key, err := gcpClient().Projects.ServiceAccounts.Keys.
 		Create(gcpServiceAccountName(project, account),
 			&gcpiam.CreateServiceAccountKeyRequest{}).
 		Do()
 	if err == nil {
 		privateKeyData = key.PrivateKeyData
+		nameSplit := strings.Split(key.Name, "/")
+		keyID = nameSplit[len(nameSplit)-1]
 	}
 	return
 }

@@ -30,6 +30,7 @@ func awsKeys() (keys []Key) {
 			keyID := *awsKey.AccessKeyId
 			keys = append(keys, Key{
 				*awsKey.UserName,
+				*awsKey.UserName,
 				minsSince(*awsKey.CreateDate),
 				keyID,
 				0,
