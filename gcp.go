@@ -2,6 +2,7 @@ package keys
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"strings"
@@ -15,6 +16,7 @@ type GcpKey struct{}
 
 //keys returns a slice of keys from any authorised accounts
 func (g GcpKey) keys(project string) (keys []Key) {
+	validateGcpProjectString(project)
 	service := gcpClient()
 	for _, acc := range gcpServiceAccounts(project, *service) {
 		for _, gcpKey := range gcpServiceAccountKeys(gcpServiceAccountName(project, acc.Email),
@@ -43,6 +45,7 @@ func (g GcpKey) keys(project string) (keys []Key) {
 
 //createKey creates a key in the provided account
 func (g GcpKey) createKey(project, account string) (keyID, newKey string, err error) {
+	validateGcpProjectString(project)
 	key, err := gcpClient().Projects.ServiceAccounts.Keys.
 		Create(gcpServiceAccountName(project, account),
 			&gcpiam.CreateServiceAccountKeyRequest{}).
@@ -57,6 +60,7 @@ func (g GcpKey) createKey(project, account string) (keyID, newKey string, err er
 
 //deleteKey deletes the specified key from the specified account
 func (g GcpKey) deleteKey(project, account, keyID string) (err error) {
+	validateGcpProjectString(project)
 	_, err = gcpClient().Projects.ServiceAccounts.Keys.
 		Delete(gcpServiceAccountKeyName(project, account, keyID)).
 		Do()
@@ -112,5 +116,13 @@ func gcpServiceAccountName(project, sa string) (name string) {
 //  "projects/{PROJECT}/serviceAccounts/{SA}/keys/{KEY}"
 func gcpServiceAccountKeyName(project, sa, key string) (name string) {
 	name = fmt.Sprintf("%s/keys/%s", gcpServiceAccountName(project, sa), key)
+	return
+}
+
+//validateGcpProjectString validates the GCP project string
+func validateGcpProjectString(project string) (err error) {
+	if len(project) == 0 {
+		err = errors.New("GCP project string needs to be set")
+	}
 	return
 }

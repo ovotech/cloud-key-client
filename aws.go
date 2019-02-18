@@ -42,7 +42,7 @@ func (a AwsKey) keys(project string) (keys []Key) {
 func (a AwsKey) createKey(project, account string) (keyID, newKey string, err error) {
 	svc := awsiam.New(awsSession())
 	if len(awsKeyList(account, *svc)) >= accessKeyLimit {
-		panic("Number of Access Keys for user: " + account + "is already at its limit (" +
+		panic("Number of Access Keys for user: " + account + " is already at its limit (" +
 			strconv.Itoa(accessKeyLimit) +
 			")")
 	}
