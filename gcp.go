@@ -10,11 +10,14 @@ import (
 	gcpiam "google.golang.org/api/iam/v1"
 )
 
-//gcpKeys returns a slice of generic keys with provider=gcp
-func gcpKeys(gcpProject string) (keys []Key) {
+//GcpKey type
+type GcpKey struct{}
+
+//keys returns a slice of keys from any authorised accounts
+func (g GcpKey) keys(project string) (keys []Key) {
 	service := gcpClient()
-	for _, acc := range gcpServiceAccounts(gcpProject, *service) {
-		for _, gcpKey := range gcpServiceAccountKeys(gcpServiceAccountName(gcpProject, acc.Email),
+	for _, acc := range gcpServiceAccounts(project, *service) {
+		for _, gcpKey := range gcpServiceAccountKeys(gcpServiceAccountName(project, acc.Email),
 			*service) {
 			keyAge := minsSince(parseTime(gcpTimeFormat, gcpKey.ValidAfterTime))
 			keyID := subString(gcpKey.Name, gcpKeyPrefix, gcpKeySuffix)
@@ -31,10 +34,32 @@ func gcpKeys(gcpProject string) (keys []Key) {
 				keyMinsToExpiry,
 				strings.Join([]string{serviceAccountName,
 					keyID[len(keyID)-numIDValuesInName:]}, "_"),
-				Provider{gcpProviderString, gcpProject},
+				Provider{gcpProviderString, project},
 			})
 		}
 	}
+	return
+}
+
+//createKey creates a key in the provided account
+func (g GcpKey) createKey(project, account string) (keyID, newKey string, err error) {
+	key, err := gcpClient().Projects.ServiceAccounts.Keys.
+		Create(gcpServiceAccountName(project, account),
+			&gcpiam.CreateServiceAccountKeyRequest{}).
+		Do()
+	if err == nil {
+		newKey = key.PrivateKeyData
+		nameSplit := strings.Split(key.Name, "/")
+		keyID = nameSplit[len(nameSplit)-1]
+	}
+	return
+}
+
+//deleteKey deletes the specified key from the specified account
+func (g GcpKey) deleteKey(project, account, keyID string) (err error) {
+	_, err = gcpClient().Projects.ServiceAccounts.Keys.
+		Delete(gcpServiceAccountKeyName(project, account, keyID)).
+		Do()
 	return
 }
 
@@ -87,30 +112,5 @@ func gcpServiceAccountName(project, sa string) (name string) {
 //  "projects/{PROJECT}/serviceAccounts/{SA}/keys/{KEY}"
 func gcpServiceAccountKeyName(project, sa, key string) (name string) {
 	name = fmt.Sprintf("%s/keys/%s", gcpServiceAccountName(project, sa), key)
-	return
-}
-
-//GcpCreateKey creates a new service account key, returning the new key's
-//private data if the creation was a success (nil if creation failed), and an
-//error (nil upon success)
-func gcpCreateKey(project, account string) (keyID, privateKeyData string, err error) {
-	key, err := gcpClient().Projects.ServiceAccounts.Keys.
-		Create(gcpServiceAccountName(project, account),
-			&gcpiam.CreateServiceAccountKeyRequest{}).
-		Do()
-	if err == nil {
-		privateKeyData = key.PrivateKeyData
-		nameSplit := strings.Split(key.Name, "/")
-		keyID = nameSplit[len(nameSplit)-1]
-	}
-	return
-}
-
-//GcpDeleteKey deletes the specified service account key, and returns an error
-//(nil upon successful deletion)
-func gcpDeleteKey(project, account, keyID string) (err error) {
-	_, err = gcpClient().Projects.ServiceAccounts.Keys.
-		Delete(gcpServiceAccountKeyName(project, account, keyID)).
-		Do()
 	return
 }

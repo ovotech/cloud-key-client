@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+//ProviderInterface type
+type ProviderInterface interface {
+	keys(project string) []Key
+	createKey(project, account string) (keyID, newKey string, err error)
+	deleteKey(project, account, keyID string) (err error)
+}
+
 //Key type
 type Key struct {
 	Account       string
@@ -33,17 +40,14 @@ const (
 	numIDValuesInName       = 6
 )
 
+var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
+	awsProviderString: AwsKey{}}
+
 //Keys returns a generic key slice of potentially multiple provider keys
 func Keys(providers []Provider) (keys []Key) {
 	for _, providerRequest := range providers {
-		switch providerRequest.Provider {
-		case gcpProviderString:
-			keys = appendSlice(keys, gcpKeys(providerRequest.GcpProject))
-		case awsProviderString:
-			keys = appendSlice(keys, awsKeys())
-		default:
-			panic("No valid providers specified. Must be gcp|aws")
-		}
+		keys = appendSlice(keys, providerMap[providerRequest.Provider].
+			keys(providerRequest.GcpProject))
 	}
 	return
 }
@@ -51,28 +55,19 @@ func Keys(providers []Provider) (keys []Key) {
 //CreateKeyFromScratch creates a new key from just provider and account
 //parameters (an existing key is not required)
 func CreateKeyFromScratch(provider Provider, account string) (keyID, newKey string, err error) {
-	switch provider.Provider {
-	case gcpProviderString:
-		keyID, newKey, err = gcpCreateKey(provider.GcpProject, account)
-	}
+	keyID, newKey, err = providerMap[provider.Provider].createKey(provider.GcpProject, account)
 	return
 }
 
 //CreateKey creates a new key using details of the provided key
 func CreateKey(key Key) (keyID, newKey string, err error) {
-	switch key.Provider.Provider {
-	case gcpProviderString:
-		keyID, newKey, err = gcpCreateKey(key.Provider.GcpProject, key.FullAccount)
-	}
+	keyID, newKey, err = CreateKeyFromScratch(key.Provider, key.FullAccount)
 	return
 }
 
 //DeleteKey deletes the specified key
 func DeleteKey(key Key) (err error) {
-	switch key.Provider.Provider {
-	case gcpProviderString:
-		err = gcpDeleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
-	}
+	err = providerMap[key.Provider.Provider].deleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
 	return
 }
 
