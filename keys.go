@@ -3,6 +3,8 @@ package keys
 import (
 	"strings"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 //ProviderInterface type
@@ -43,6 +45,8 @@ const (
 var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
 	awsProviderString: AwsKey{}}
 
+var logger = stdoutLogger().Sugar()
+
 //Keys returns a generic key slice of potentially multiple provider keys
 func Keys(providers []Provider) (keys []Key) {
 	for _, providerRequest := range providers {
@@ -81,8 +85,9 @@ func appendSlice(keys, keysToAdd []Key) []Key {
 
 //check panics if error is not nil
 func check(e error) {
+	defer logger.Sync()
 	if e != nil {
-		panic(e.Error())
+		logger.Panic(e.Error())
 	}
 }
 
@@ -105,6 +110,7 @@ func minsSince(then time.Time) (minsSinceCreation float64) {
 // end strings. If neither start or end strings exist, it panics. Specify empty
 // string as the 'end' parameter to use the length of str as the end index
 func subString(str string, start string, end string) (result string) {
+	defer logger.Sync()
 	startIndex := strings.Index(str, start)
 	if startIndex != -1 {
 		startIndex += len(start)
@@ -112,12 +118,21 @@ func subString(str string, start string, end string) (result string) {
 		if len(end) > 0 {
 			endIndex = strings.Index(str, end)
 			if endIndex == -1 {
-				panic("string " + end + "not found in target: " + str)
+				logger.Panicf("string %s not found in target: %s", end, str)
 			}
 		}
 		result = str[startIndex:endIndex]
 	} else {
-		panic("string " + start + "not found in target: " + str)
+		logger.Panicf("string %s not found in target: %s", start, str)
 	}
+	return
+}
+
+//stdoutLogger creates a stdout logger
+func stdoutLogger() (logger *zap.Logger) {
+	config := zap.NewProductionConfig()
+	config.OutputPaths = []string{"stdout"}
+	config.ErrorOutputPaths = []string{"stdout"}
+	logger, _ = config.Build()
 	return
 }
