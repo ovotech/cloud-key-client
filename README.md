@@ -4,14 +4,14 @@ Cloud-Key-Client is a Golang client that connects up to cloud providers either
 to collect details of Service Account keys, or manipulate them.
 
 
-# Install as a Go Dependency
+## Install as a Go Dependency
 
 ```go
 go get -u github.com/ovotech/cloud-key-client
 ```
 
 
-# Purpose
+## Purpose
 
 The data of Service Account Keys that the client can return:
 
@@ -38,7 +38,7 @@ Note the age of each key is returned. This could prove useful for users who want
 to track the ages of their keys, alert on old keys, and/or rotate them.
 
 
-# Integrations
+## Integrations
 
 The following providers have been integrated:
 
