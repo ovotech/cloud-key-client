@@ -1,11 +1,44 @@
 # Cloud-Key-Client
 
-Cloud-Key-Client is a Golang client that connects up to cloud providers either to collect details of
-Service Account keys, or manipulate them.
+Cloud-Key-Client is a Golang client that connects up to cloud providers either
+to collect details of Service Account keys, or manipulate them.
 
-Amongst the details collected is the age (in minutes) of each key. This could
-prove useful for applications that apply further analysis and/or processing on
-them, such as key rotation.
+
+# Install as a Go Dependency
+
+```go
+go get -u github.com/ovotech/cloud-key-client
+```
+
+
+# Purpose
+
+The data of Service Account Keys that the client can return:
+
+```go
+//Key type
+type Key struct {
+	Account       string
+	FullAccount   string
+	Age           float64 //minutes
+	ID            string
+	LifeRemaining float64
+	Name          string
+	Provider      Provider
+}
+
+//Provider type
+type Provider struct {
+	Provider   string //e.g. "aws" or "gcp"
+	GcpProject string //Required only when using GCP
+}
+```
+
+Note the age of each key is returned. This could prove useful for users who want
+to track the ages of their keys, alert on old keys, and/or rotate them.
+
+
+# Integrations
 
 The following providers have been integrated:
 
