@@ -1,8 +1,9 @@
 package keys
 
 import (
-	"strconv"
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,15 +19,26 @@ type AwsKey struct{}
 const accessKeyLimit = 2
 
 //keys returns a slice of keys from any authorised accounts
-func (a AwsKey) keys(project string) (keys []Key) {
-	svc := awsiam.New(awsSession())
-	for _, user := range awsUserList(*svc) {
-		for _, awsKey := range awsKeyList(*user.UserName, *svc) {
+func (a AwsKey) keys(project string) (keys []Key, err error) {
+	var svc *awsiam.IAM
+	if svc, err = iamService(); err != nil {
+		return
+	}
+	var userList []*awsiam.User
+	if userList, err = awsUserList(*svc); err != nil {
+		return
+	}
+	for _, user := range userList {
+		var keyList []*awsiam.AccessKeyMetadata
+		if keyList, err = awsKeyList(*user.UserName, *svc); err != nil {
+			return
+		}
+		for _, awsKey := range keyList {
 			keyID := *awsKey.AccessKeyId
 			keys = append(keys, Key{
 				*awsKey.UserName,
 				*awsKey.UserName,
-				minsSince(*awsKey.CreateDate),
+				time.Since(*awsKey.CreateDate).Minutes(),
 				keyID,
 				0,
 				strings.Join([]string{*awsKey.UserName,
@@ -40,15 +52,26 @@ func (a AwsKey) keys(project string) (keys []Key) {
 
 //createKey creates a key in the provided account
 func (a AwsKey) createKey(project, account string) (keyID, newKey string, err error) {
-	svc := awsiam.New(awsSession())
-	if len(awsKeyList(account, *svc)) >= accessKeyLimit {
-		panic("Number of Access Keys for user: " + account + " is already at its limit (" +
-			strconv.Itoa(accessKeyLimit) +
-			")")
+	var svc *awsiam.IAM
+	if svc, err = iamService(); err != nil {
+		return
 	}
-	key, err := svc.CreateAccessKey(&awsiam.CreateAccessKeyInput{
+	var keyList []*awsiam.AccessKeyMetadata
+	if keyList, err = awsKeyList(account, *svc); err != nil {
+		return
+	}
+	keyNum := len(keyList)
+	if keyNum >= accessKeyLimit {
+		err = fmt.Errorf("Number of Access Keys for user: %s is already at its limit (%d)",
+			account, accessKeyLimit)
+		return
+	}
+	var key *awsiam.CreateAccessKeyOutput
+	if key, err = svc.CreateAccessKey(&awsiam.CreateAccessKeyInput{
 		UserName: aws.String(account),
-	})
+	}); err != nil {
+		return
+	}
 	accessKey := key.AccessKey
 	keyID = *accessKey.AccessKeyId
 	newKey = *accessKey.SecretAccessKey
@@ -57,7 +80,10 @@ func (a AwsKey) createKey(project, account string) (keyID, newKey string, err er
 
 //deleteKey deletes the specified key from the specified account
 func (a AwsKey) deleteKey(project, account, keyID string) (err error) {
-	svc := awsiam.New(awsSession())
+	var svc *awsiam.IAM
+	if svc, err = iamService(); err != nil {
+		return
+	}
 	_, err = svc.DeleteAccessKey(&awsiam.DeleteAccessKeyInput{
 		AccessKeyId: aws.String(keyID),
 		UserName:    aws.String(account),
@@ -66,32 +92,43 @@ func (a AwsKey) deleteKey(project, account, keyID string) (err error) {
 }
 
 //awsSession creates a new AWS SDK session
-func awsSession() (sess *session.Session) {
-	sess, err := session.NewSession(&aws.Config{
+func awsSession() (*session.Session, error) {
+	return session.NewSession(&aws.Config{
 		Region: aws.String("us-east-1")},
 	)
-	check(err)
+}
+
+func iamService() (iamService *awsiam.IAM, err error) {
+	var awsSess *session.Session
+	if awsSess, err = awsSession(); err != nil {
+		return
+	}
+	iamService = awsiam.New(awsSess)
 	return
 }
 
 //awsUserList obtains a slice of Users from the AWS IAM service
-func awsUserList(iamService awsiam.IAM) (users []*awsiam.User) {
-	userResult, err := iamService.ListUsers(&awsiam.ListUsersInput{
+func awsUserList(iamService awsiam.IAM) (users []*awsiam.User, err error) {
+	var userResult *awsiam.ListUsersOutput
+	if userResult, err = iamService.ListUsers(&awsiam.ListUsersInput{
 		MaxItems: aws.Int64(10),
-	})
-	check(err)
+	}); err != nil {
+		return
+	}
 	users = userResult.Users
 	return
 }
 
 //awsKeyList obtains a slice of accessKeyMetadata from the specified User's account
 //using the AWS IAM service
-func awsKeyList(username string, iamService awsiam.IAM) (accessKeyMetadata []*awsiam.AccessKeyMetadata) {
-	result, err := iamService.ListAccessKeys(&awsiam.ListAccessKeysInput{
+func awsKeyList(username string, iamService awsiam.IAM) (accessKeyMetadata []*awsiam.AccessKeyMetadata, err error) {
+	var result *awsiam.ListAccessKeysOutput
+	if result, err = iamService.ListAccessKeys(&awsiam.ListAccessKeysInput{
 		MaxItems: aws.Int64(5),
 		UserName: aws.String(username),
-	})
-	check(err)
+	}); err != nil {
+		return
+	}
 	accessKeyMetadata = result.AccessKeyMetadata
 	return
 }

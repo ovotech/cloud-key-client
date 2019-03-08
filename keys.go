@@ -1,15 +1,15 @@
 package keys
 
 import (
+	"fmt"
 	"strings"
-	"time"
 
 	"go.uber.org/zap"
 )
 
 //ProviderInterface type
 type ProviderInterface interface {
-	keys(project string) []Key
+	keys(project string) (keys []Key, err error)
 	createKey(project, account string) (keyID, newKey string, err error)
 	deleteKey(project, account, keyID string) (err error)
 }
@@ -48,31 +48,32 @@ var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
 var logger = stdoutLogger().Sugar()
 
 //Keys returns a generic key slice of potentially multiple provider keys
-func Keys(providers []Provider) (keys []Key) {
+func Keys(providers []Provider) (keys []Key, err error) {
 	for _, providerRequest := range providers {
-		keys = appendSlice(keys, providerMap[providerRequest.Provider].
-			keys(providerRequest.GcpProject))
+		var providerKeys []Key
+		if providerKeys, err = providerMap[providerRequest.Provider].
+			keys(providerRequest.GcpProject); err != nil {
+			return
+		}
+		keys = appendSlice(keys, providerKeys)
 	}
 	return
 }
 
 //CreateKeyFromScratch creates a new key from just provider and account
 //parameters (an existing key is not required)
-func CreateKeyFromScratch(provider Provider, account string) (keyID, newKey string, err error) {
-	keyID, newKey, err = providerMap[provider.Provider].createKey(provider.GcpProject, account)
-	return
+func CreateKeyFromScratch(provider Provider, account string) (string, string, error) {
+	return providerMap[provider.Provider].createKey(provider.GcpProject, account)
 }
 
 //CreateKey creates a new key using details of the provided key
-func CreateKey(key Key) (keyID, newKey string, err error) {
-	keyID, newKey, err = CreateKeyFromScratch(key.Provider, key.FullAccount)
-	return
+func CreateKey(key Key) (string, string, error) {
+	return CreateKeyFromScratch(key.Provider, key.FullAccount)
 }
 
 //DeleteKey deletes the specified key
-func DeleteKey(key Key) (err error) {
-	err = providerMap[key.Provider.Provider].deleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
-	return
+func DeleteKey(key Key) error {
+	return providerMap[key.Provider.Provider].deleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
 }
 
 //appendSlice appends the 2nd slice to the 1st, and returns the resulting slice
@@ -83,33 +84,10 @@ func appendSlice(keys, keysToAdd []Key) []Key {
 	return keys
 }
 
-//check panics if error is not nil
-func check(e error) {
-	defer logger.Sync()
-	if e != nil {
-		logger.Panic(e.Error())
-	}
-}
-
-//parseTime calls time.Parse with the timeFormat and timeString provided, and
-// checks for an error
-func parseTime(timeFormat, timeString string) (then time.Time) {
-	then, err := time.Parse(timeFormat, timeString)
-	check(err)
-	return
-}
-
-//minsSinceCreation returns the number of minutes since the provided time.Time
-func minsSince(then time.Time) (minsSinceCreation float64) {
-	duration := time.Since(then)
-	minsSinceCreation = duration.Minutes()
-	return
-}
-
 //substring returns a non-inclusive substring between the provided start and
-// end strings. If neither start or end strings exist, it panics. Specify empty
-// string as the 'end' parameter to use the length of str as the end index
-func subString(str string, start string, end string) (result string) {
+// end strings. Specify empty string as the 'end' parameter to use the length of
+// str as the end index
+func subString(str string, start string, end string) (result string, err error) {
 	defer logger.Sync()
 	startIndex := strings.Index(str, start)
 	if startIndex != -1 {
@@ -118,12 +96,14 @@ func subString(str string, start string, end string) (result string) {
 		if len(end) > 0 {
 			endIndex = strings.Index(str, end)
 			if endIndex == -1 {
-				logger.Panicf("string %s not found in target: %s", end, str)
+				err = fmt.Errorf("string %s not found in target: %s", end, str)
+				return
 			}
 		}
 		result = str[startIndex:endIndex]
 	} else {
-		logger.Panicf("string %s not found in target: %s", start, str)
+		err = fmt.Errorf("string %s not found in target: %s", start, str)
+		return
 	}
 	return
 }

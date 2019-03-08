@@ -4,7 +4,6 @@ import (
 	"errors"
 	"reflect"
 	"testing"
-	"time"
 )
 
 var substringTests = []struct {
@@ -12,74 +11,24 @@ var substringTests = []struct {
 	start string
 	end   string
 	out   string
+	err   error
 }{
-	{"hello world", "hello", "", " world"},
-	{"hello world", "", "world", "hello "},
-	{"hello world", "", "", "hello world"},
-	{"", "", "", ""},
+	{"hello world", "hello", "", " world", nil},
+	{"hello world", "", "world", "hello ", nil},
+	{"hello world", "", "", "hello world", nil},
+	{"", "", "", "", nil},
+	{"hello world", "should_produce_error", "", "", errors.New("")},
 }
 
 func TestSubstring(t *testing.T) {
 	for _, substringTest := range substringTests {
-		substring := subString(substringTest.in, substringTest.start, substringTest.end)
-		if substring != substringTest.out {
-			t.Errorf("got %q, want %q", substring, substringTest.out)
+		substr, err := subString(substringTest.in, substringTest.start, substringTest.end)
+		if (err != nil && substringTest.err == nil) || (err == nil && substringTest.err != nil) {
+			t.Errorf("got an unexpected number of errors")
+		} else if substr != substringTest.out {
+			t.Errorf("got %q, want %q", substr, substringTest.out)
 		}
 	}
-}
-
-func TestSubStringStartPanic(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-	subString("hello world", "panic", "")
-}
-
-func TestSubStringEndPanic(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-	subString("hello world", "", "panic")
-}
-
-func TestMinsSince(t *testing.T) {
-	actual := int(minsSince(time.Now()))
-	expected := 0
-	if int(actual) != expected {
-		t.Errorf("Incorrect float returned, got: %d, want: %d.", actual, expected)
-	}
-}
-
-func TestCheck(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-	check(errors.New("this should cause panic"))
-}
-
-func TestParseTime(t *testing.T) {
-	actual := parseTime(
-		time.RFC3339,
-		"2012-11-01T23:08:41+00:00").String()
-	expected := "2012-11-01 23:08:41 +0000 GMT"
-	if expected != actual {
-		t.Errorf("Incorrect string returned, got: %s, want: %s.", actual, expected)
-	}
-}
-
-func TestParseTimePanic(t *testing.T) {
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("The code did not panic")
-		}
-	}()
-	parseTime(time.RFC3339, "2012-11-01T25:08:41+00:00")
 }
 
 func TestAppendSlice(t *testing.T) {
