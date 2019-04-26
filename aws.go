@@ -16,7 +16,12 @@ import (
 //AwsKey type
 type AwsKey struct{}
 
-const accessKeyLimit = 2
+const (
+	accessKeyLimit = 2
+	defaultRegion  = "us-east-1"
+	maxKeys        = 5
+	maxUsers       = 1000
+)
 
 //keys returns a slice of keys from any authorised accounts
 func (a AwsKey) keys(project string) (keys []Key, err error) {
@@ -94,7 +99,7 @@ func (a AwsKey) deleteKey(project, account, keyID string) (err error) {
 //awsSession creates a new AWS SDK session
 func awsSession() (*session.Session, error) {
 	return session.NewSession(&aws.Config{
-		Region: aws.String("us-east-1")},
+		Region: aws.String(defaultRegion)},
 	)
 }
 
@@ -111,7 +116,7 @@ func iamService() (iamService *awsiam.IAM, err error) {
 func awsUserList(iamService awsiam.IAM) (users []*awsiam.User, err error) {
 	var userResult *awsiam.ListUsersOutput
 	if userResult, err = iamService.ListUsers(&awsiam.ListUsersInput{
-		MaxItems: aws.Int64(10),
+		MaxItems: aws.Int64(maxUsers),
 	}); err != nil {
 		return
 	}
@@ -124,7 +129,7 @@ func awsUserList(iamService awsiam.IAM) (users []*awsiam.User, err error) {
 func awsKeyList(username string, iamService awsiam.IAM) (accessKeyMetadata []*awsiam.AccessKeyMetadata, err error) {
 	var result *awsiam.ListAccessKeysOutput
 	if result, err = iamService.ListAccessKeys(&awsiam.ListAccessKeysInput{
-		MaxItems: aws.Int64(5),
+		MaxItems: aws.Int64(maxKeys),
 		UserName: aws.String(username),
 	}); err != nil {
 		return
