@@ -17,7 +17,7 @@ import (
 type GcpKey struct{}
 
 //keys returns a slice of keys from any authorised accounts
-func (g GcpKey) keys(project string) (keys []Key, err error) {
+func (g GcpKey) keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
 	}
@@ -77,6 +77,7 @@ func keyFromGcpKey(gcpKey *gcpiam.ServiceAccountKey, project string) (key Key, e
 		strings.Join([]string{serviceAccountName,
 			keyID[len(keyID)-numIDValuesInName:]}, "_"),
 		Provider{gcpProviderString, project},
+		"Active",
 	}
 	return
 }

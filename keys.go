@@ -9,7 +9,7 @@ import (
 
 //ProviderInterface type
 type ProviderInterface interface {
-	keys(project string) (keys []Key, err error)
+	keys(project string, includeInactiveKeys bool) (keys []Key, err error)
 	createKey(project, account string) (keyID, newKey string, err error)
 	deleteKey(project, account, keyID string) (err error)
 }
@@ -23,6 +23,7 @@ type Key struct {
 	LifeRemaining float64
 	Name          string
 	Provider      Provider
+	Status        string
 }
 
 //Provider type
@@ -48,11 +49,11 @@ var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
 var logger = stdoutLogger().Sugar()
 
 //Keys returns a generic key slice of potentially multiple provider keys
-func Keys(providers []Provider) (keys []Key, err error) {
+func Keys(providers []Provider, includeInactiveKeys bool) (keys []Key, err error) {
 	for _, providerRequest := range providers {
 		var providerKeys []Key
 		if providerKeys, err = providerMap[providerRequest.Provider].
-			keys(providerRequest.GcpProject); err != nil {
+			keys(providerRequest.GcpProject, includeInactiveKeys); err != nil {
 			return
 		}
 		keys = appendSlice(keys, providerKeys)

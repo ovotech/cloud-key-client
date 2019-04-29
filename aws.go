@@ -24,7 +24,7 @@ const (
 )
 
 //keys returns a slice of keys from any authorised accounts
-func (a AwsKey) keys(project string) (keys []Key, err error) {
+func (a AwsKey) keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
@@ -39,17 +39,20 @@ func (a AwsKey) keys(project string) (keys []Key, err error) {
 			return
 		}
 		for _, awsKey := range keyList {
-			keyID := *awsKey.AccessKeyId
-			keys = append(keys, Key{
-				*awsKey.UserName,
-				*awsKey.UserName,
-				time.Since(*awsKey.CreateDate).Minutes(),
-				keyID,
-				0,
-				strings.Join([]string{*awsKey.UserName,
-					keyID[len(keyID)-numIDValuesInName:]}, "_"),
-				Provider{awsProviderString, ""},
-			})
+			if includeInactiveKeys || *awsKey.Status == "Active" {
+				keyID := *awsKey.AccessKeyId
+				keys = append(keys, Key{
+					*awsKey.UserName,
+					*awsKey.UserName,
+					time.Since(*awsKey.CreateDate).Minutes(),
+					keyID,
+					0,
+					strings.Join([]string{*awsKey.UserName,
+						keyID[len(keyID)-numIDValuesInName:]}, "_"),
+					Provider{awsProviderString, ""},
+					*awsKey.Status,
+				})
+			}
 		}
 	}
 	return
