@@ -49,7 +49,7 @@ var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
 var logger = stdoutLogger().Sugar()
 
 //RegisterProvider informs the tool about a new cloud provider, in addition to AWS and GCP, and registers it under a unique key
-func RegisterProvider(providerName string, provider interface{}) {
+func RegisterProvider(providerName string, provider ProviderInterface) {
 	providerMap[providerName] = provider
 }
 
