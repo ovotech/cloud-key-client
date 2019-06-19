@@ -9,9 +9,9 @@ import (
 
 //ProviderInterface type
 type ProviderInterface interface {
-	keys(project string, includeInactiveKeys bool) (keys []Key, err error)
-	createKey(project, account string) (keyID, newKey string, err error)
-	deleteKey(project, account, keyID string) (err error)
+	Keys(project string, includeInactiveKeys bool) (keys []Key, err error)
+	CreateKey(project, account string) (keyID, newKey string, err error)
+	DeleteKey(project, account, keyID string) (err error)
 }
 
 //Key type
@@ -48,12 +48,17 @@ var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
 
 var logger = stdoutLogger().Sugar()
 
+//RegisterProvider informs the tool about a new cloud provider, in addition to AWS and GCP, and registers it under a unique key
+func RegisterProvider(providerName string, provider ProviderInterface) {
+	providerMap[providerName] = provider
+}
+
 //Keys returns a generic key slice of potentially multiple provider keys
 func Keys(providers []Provider, includeInactiveKeys bool) (keys []Key, err error) {
 	for _, providerRequest := range providers {
 		var providerKeys []Key
 		if providerKeys, err = providerMap[providerRequest.Provider].
-			keys(providerRequest.GcpProject, includeInactiveKeys); err != nil {
+			Keys(providerRequest.GcpProject, includeInactiveKeys); err != nil {
 			return
 		}
 		keys = appendSlice(keys, providerKeys)
@@ -64,7 +69,7 @@ func Keys(providers []Provider, includeInactiveKeys bool) (keys []Key, err error
 //CreateKeyFromScratch creates a new key from just provider and account
 //parameters (an existing key is not required)
 func CreateKeyFromScratch(provider Provider, account string) (string, string, error) {
-	return providerMap[provider.Provider].createKey(provider.GcpProject, account)
+	return providerMap[provider.Provider].CreateKey(provider.GcpProject, account)
 }
 
 //CreateKey creates a new key using details of the provided key
@@ -74,7 +79,7 @@ func CreateKey(key Key) (string, string, error) {
 
 //DeleteKey deletes the specified key
 func DeleteKey(key Key) error {
-	return providerMap[key.Provider.Provider].deleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
+	return providerMap[key.Provider.Provider].DeleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
 }
 
 //appendSlice appends the 2nd slice to the 1st, and returns the resulting slice

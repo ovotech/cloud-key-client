@@ -24,7 +24,7 @@ const (
 )
 
 //keys returns a slice of keys from any authorised accounts
-func (a AwsKey) keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
+func (a AwsKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
@@ -59,7 +59,7 @@ func (a AwsKey) keys(project string, includeInactiveKeys bool) (keys []Key, err 
 }
 
 //createKey creates a key in the provided account
-func (a AwsKey) createKey(project, account string) (keyID, newKey string, err error) {
+func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
@@ -87,7 +87,7 @@ func (a AwsKey) createKey(project, account string) (keyID, newKey string, err er
 }
 
 //deleteKey deletes the specified key from the specified account
-func (a AwsKey) deleteKey(project, account, keyID string) (err error) {
+func (a AwsKey) DeleteKey(project, account, keyID string) (err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
