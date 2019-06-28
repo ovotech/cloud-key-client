@@ -23,7 +23,7 @@ const (
 	maxUsers       = 1000
 )
 
-//keys returns a slice of keys from any authorised accounts
+//Keys returns a slice of keys from any authorised accounts
 func (a AwsKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
@@ -58,7 +58,7 @@ func (a AwsKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err 
 	return
 }
 
-//createKey creates a key in the provided account
+//CreateKey creates a key in the provided account
 func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
@@ -86,7 +86,7 @@ func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err er
 	return
 }
 
-//deleteKey deletes the specified key from the specified account
+//DeleteKey deletes the specified key from the specified account
 func (a AwsKey) DeleteKey(project, account, keyID string) (err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {

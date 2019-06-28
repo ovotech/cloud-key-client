@@ -16,7 +16,7 @@ import (
 //GcpKey type
 type GcpKey struct{}
 
-//keys returns a slice of keys from any authorised accounts
+//Keys returns a slice of keys from any authorised accounts
 func (g GcpKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
@@ -82,7 +82,7 @@ func keyFromGcpKey(gcpKey *gcpiam.ServiceAccountKey, project string) (key Key, e
 	return
 }
 
-//createKey creates a key in the provided account
+//CreateKey creates a key in the provided account
 func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
@@ -104,7 +104,7 @@ func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err er
 	return
 }
 
-//deleteKey deletes the specified key from the specified account
+//DeleteKey deletes the specified key from the specified account
 func (g GcpKey) DeleteKey(project, account, keyID string) (err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
