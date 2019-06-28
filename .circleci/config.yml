@@ -1,0 +1,145 @@
+defaults: &defaults
+  working_directory: /go/src/github.com/ovotech/cloud-key-rotator
+
+version: 2
+jobs:
+  go_fmt:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: ensure gofmt
+           command: |
+             test -z $(gofmt -s -l $(find . -iname '*.go' -type f | grep -v /vendor/))
+  go_vet:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: go vet
+           command: |
+             export GO111MODULE=on
+             go mod download
+             go vet ./...
+
+  go_cyclo:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: go_cyclo
+           command: gocyclo -over 6 cmd
+
+  go_lint:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: golint
+           command: golint -set_exit_status $(go list ./...)
+
+  go_build:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: go build
+           command: |
+             export GO111MODULE=on
+             go build
+
+  go_test:
+    <<: *defaults
+
+    docker:
+      - image: eversc/go-pr-checks
+
+    steps:
+      - checkout
+
+      - run:
+           name: go test
+           command: |
+             export GO111MODULE=on
+             go mod download
+             go test ./...
+
+workflows:
+  version: 2
+  pr_pipeline:
+    jobs:
+      - go_fmt:
+          filters:
+            branches:
+              ignore: master
+      - go_vet:
+          filters:
+            branches:
+              ignore: master
+      - go_cyclo:
+          filters:
+            branches:
+              ignore: master
+      - go_lint:
+          filters:
+            branches:
+              ignore: master
+      - go_build:
+          filters:
+            branches:
+              ignore: master
+      - go_test:
+          filters:
+            branches:
+              ignore: master
+  master_pipeline:
+    jobs:
+      - go_fmt:
+          filters:
+            branches:
+              only: master
+      - go_vet:
+          filters:
+            branches:
+              only: master
+      - go_cyclo:
+          filters:
+            branches:
+              only: master
+      - go_lint:
+          filters:
+            branches:
+              only: master
+      - go_build:
+          filters:
+            branches:
+              only: master
+      - go_test:
+          filters:
+            branches:
+              only: master
