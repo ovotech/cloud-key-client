@@ -1,4 +1,5 @@
 # Cloud-Key-Client
+ [![CircleCI](https://circleci.com/gh/ovotech/cloud-key-client.svg?style=svg&circle-token=4a7b48b664bf017b6256234f5de24c5b70c54168)](https://circleci.com/gh/ovotech/cloud-key-client)
 
 Cloud-Key-Client is a Golang client that connects up to cloud providers either
 to collect details of Service Account keys, or manipulate them.
