@@ -57,6 +57,8 @@ github.com/aws/aws-sdk-go v1.23.1 h1:MXfB75PkuWJJmZMCQ40haFUuOIIGt1FuiWtPBXy8URA
 github.com/aws/aws-sdk-go v1.23.1/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.23.2 h1:QSdnxlC29v6b2+C6mkriHhElh02ZlsRBoPX15SOZ6jU=
 github.com/aws/aws-sdk-go v1.23.2/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/aws/aws-sdk-go v1.23.3 h1:Ty/4P6tOFJkDnKDrFJWnveznvESblf8QOheD1CwQPDU=
+github.com/aws/aws-sdk-go v1.23.3/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/mock v1.1.1/go.mod h1:oTYuIxOrZwtPieC+H1uAHpcLFnEyAGVDL/k47Jfbm0A=
