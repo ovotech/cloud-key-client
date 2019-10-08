@@ -29,7 +29,11 @@ func (g GcpKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err 
 	if gcpSAs, err = gcpServiceAccounts(project, *iamService); err != nil {
 		return
 	}
-	for _, acc := range gcpSAs {
+	return keysFromServiceAccount(project, includeInactiveKeys, gcpSAs, iamService)
+}
+
+func keysFromServiceAccount(project string, includeInactiveKeys bool, accs []*gcpiam.ServiceAccount, iamService *gcpiam.Service) (keys []Key, err error) {
+	for _, acc := range accs {
 		if includeInactiveKeys || !acc.Disabled {
 			var gcpSAKeys []*gcpiam.ServiceAccountKey
 			if gcpSAKeys, err = gcpServiceAccountKeys(gcpServiceAccountName(project, acc.Email), *iamService); err != nil {
