@@ -39,6 +39,9 @@ func (g GcpKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err 
 			if key, err = keyFromGcpKey(gcpKey, project); err != nil {
 				return
 			}
+			if acc.Disabled {
+				key.Status = "Inactive"
+			}
 			keys = append(keys, key)
 		}
 	}
