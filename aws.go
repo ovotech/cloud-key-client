@@ -17,10 +17,10 @@ import (
 type AwsKey struct{}
 
 const (
-	accessKeyLimit = 2
-	defaultRegion  = "us-east-1"
-	maxKeys        = 5
-	maxUsers       = 1000
+	awsAccessKeyLimit = 2
+	defaultRegion     = "us-east-1"
+	maxKeys           = 5
+	maxUsers          = 1000
 )
 
 //Keys returns a slice of keys from any authorised accounts
@@ -69,9 +69,9 @@ func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err er
 		return
 	}
 	keyNum := len(keyList)
-	if keyNum >= accessKeyLimit {
+	if keyNum >= awsAccessKeyLimit {
 		err = fmt.Errorf("Number of Access Keys for user: %s is already at its limit (%d)",
-			account, accessKeyLimit)
+			account, awsAccessKeyLimit)
 		return
 	}
 	var key *awsiam.CreateAccessKeyOutput

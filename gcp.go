@@ -16,6 +16,8 @@ import (
 //GcpKey type
 type GcpKey struct{}
 
+const gcpAccessKeyLimit = 10
+
 //Keys returns a slice of keys from any authorised accounts
 func (g GcpKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
 	if err = validateGcpProjectString(project); err != nil {
@@ -98,6 +100,16 @@ func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err er
 	}
 	var iamService *gcpiam.Service
 	if iamService, err = gcpIamService(); err != nil {
+		return
+	}
+	var existingKeys []*gcpiam.ServiceAccountKey
+	if existingKeys, err = gcpServiceAccountKeys(account, *iamService); err != nil {
+		return
+	}
+	keyNum := len(existingKeys)
+	if keyNum >= gcpAccessKeyLimit {
+		err = fmt.Errorf("Number of Access Keys for service account: %s is already at its limit (%d)",
+			account, gcpAccessKeyLimit)
 		return
 	}
 	var key *gcpiam.ServiceAccountKey
