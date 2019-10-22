@@ -103,7 +103,7 @@ func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err er
 		return
 	}
 	var existingKeys []*gcpiam.ServiceAccountKey
-	if existingKeys, err = gcpServiceAccountKeys(account, *iamService); err != nil {
+	if existingKeys, err = gcpServiceAccountKeys(gcpServiceAccountName(project, account), *iamService); err != nil {
 		return
 	}
 	keyNum := len(existingKeys)
