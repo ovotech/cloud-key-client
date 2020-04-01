@@ -3,7 +3,7 @@ module github.com/ovotech/cloud-key-client
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.29.14
+	github.com/aws/aws-sdk-go v1.30.1
 	go.uber.org/atomic v1.4.0 // indirect
 	go.uber.org/multierr v1.1.0 // indirect
 	go.uber.org/zap v1.14.0
