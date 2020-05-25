@@ -40,11 +40,15 @@ const (
 	gcpKeySuffix            = ""
 	gcpProviderString       = "gcp"
 	awsProviderString       = "aws"
+	awsKmsProviderString    = "awsKms"
 	numIDValuesInName       = 6
 )
 
-var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
-	awsProviderString: AwsKey{}}
+var providerMap = map[string]ProviderInterface{
+	awsProviderString:    AwsKey{},
+	awsKmsProviderString: AwsKmsKey{},
+	gcpProviderString:    GcpKey{},
+}
 
 var logger = stdoutLogger().Sugar()
 
