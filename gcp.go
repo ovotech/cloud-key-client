@@ -152,13 +152,35 @@ func gcpIamService() (service *gcpiam.Service, err error) {
 
 //gcpServiceAccounts returns a slice of GCP ServiceAccounts
 func gcpServiceAccounts(project string, service gcpiam.Service) (accs []*gcpiam.ServiceAccount, err error) {
+	var nextPageToken string
+	var accsPage []*gcpiam.ServiceAccount
+
+	for {
+		if accsPage, nextPageToken, err = gcpServiceAccountsPage(project, service, nextPageToken); err != nil {
+			return
+		}
+
+		accs = append(accs, accsPage...)
+
+		if nextPageToken == "" {
+			break
+		}
+	}
+
+	return
+}
+
+func gcpServiceAccountsPage(project string, service gcpiam.Service, pageToken string) (accs []*gcpiam.ServiceAccount, nextPageToken string, err error)  {
 	var res *gcpiam.ListServiceAccountsResponse
 	if res, err = service.Projects.ServiceAccounts.
 		List(gcpProjectName(project)).
+		PageToken(pageToken).
 		Do(); err != nil {
 		return
 	}
+
 	accs = res.Accounts
+	nextPageToken = res.NextPageToken
 	return
 }
 
