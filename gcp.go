@@ -170,7 +170,7 @@ func gcpServiceAccounts(project string, service gcpiam.Service) (accs []*gcpiam.
 	return
 }
 
-func gcpServiceAccountsPage(project string, service gcpiam.Service, pageToken string) (accs []*gcpiam.ServiceAccount, nextPageToken string, err error)  {
+func gcpServiceAccountsPage(project string, service gcpiam.Service, pageToken string) (accs []*gcpiam.ServiceAccount, nextPageToken string, err error) {
 	var res *gcpiam.ListServiceAccountsResponse
 	if res, err = service.Projects.ServiceAccounts.
 		List(gcpProjectName(project)).
