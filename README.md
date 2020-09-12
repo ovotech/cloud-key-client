@@ -28,11 +28,12 @@ func main() {
 
 	// create a GCP provider
 	gcpProvider := keys.Provider{
-		GcpProject: "pe-dev-185509",
+		GcpProject: "my-gcp-project-id",
 		Provider:   "gcp",
 	}
 	// create an AWS provider
 	awsProvider := keys.Provider{
+		// no need to specify any account ID here
 		Provider: "aws",
 	}
 
