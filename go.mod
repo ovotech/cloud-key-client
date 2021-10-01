@@ -6,5 +6,5 @@ require (
 	github.com/aws/aws-sdk-go v1.40.36
 	go.uber.org/zap v1.19.0
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f
-	google.golang.org/api v0.56.0
+	google.golang.org/api v0.58.0
 )
