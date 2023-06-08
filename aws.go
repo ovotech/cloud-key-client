@@ -24,7 +24,7 @@ const (
 )
 
 //Keys returns a slice of keys from any authorised accounts
-func (a AwsKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
+func (a AwsKey) Keys(project string, includeInactiveKeys bool, token string) (keys []Key, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
@@ -49,7 +49,7 @@ func (a AwsKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err 
 					0,
 					strings.Join([]string{*awsKey.UserName,
 						keyID[len(keyID)-numIDValuesInName:]}, "_"),
-					Provider{awsProviderString, ""},
+					Provider{Provider: awsProviderString, GcpProject: "", Token: ""},
 					*awsKey.Status,
 				})
 			}

@@ -9,7 +9,7 @@ import (
 
 //ProviderInterface type
 type ProviderInterface interface {
-	Keys(project string, includeInactiveKeys bool) (keys []Key, err error)
+	Keys(project string, includeInactiveKeys bool, token string) (keys []Key, err error)
 	CreateKey(project, account string) (keyID, newKey string, err error)
 	DeleteKey(project, account, keyID string) (err error)
 }
@@ -30,21 +30,27 @@ type Key struct {
 type Provider struct {
 	Provider   string
 	GcpProject string
+	Token      string
 }
 
 const (
+	aivenProviderString     = "aiven"
+	aivenTimeFormat         = "2006-01-02T15:04:05Z"
+	awsProviderString       = "aws"
 	gcpTimeFormat           = "2006-01-02T15:04:05Z"
 	gcpServiceAccountPrefix = "serviceAccounts/"
 	gcpServiceAccountSuffix = "@"
 	gcpKeyPrefix            = "keys/"
 	gcpKeySuffix            = ""
 	gcpProviderString       = "gcp"
-	awsProviderString       = "aws"
 	numIDValuesInName       = 6
 )
 
-var providerMap = map[string]ProviderInterface{gcpProviderString: GcpKey{},
-	awsProviderString: AwsKey{}}
+var providerMap = map[string]ProviderInterface{
+	aivenProviderString: AivenKey{},
+	awsProviderString:   AwsKey{},
+	gcpProviderString:   GcpKey{},
+}
 
 var logger = stdoutLogger().Sugar()
 
@@ -58,7 +64,7 @@ func Keys(providers []Provider, includeInactiveKeys bool) (keys []Key, err error
 	for _, providerRequest := range providers {
 		var providerKeys []Key
 		if providerKeys, err = providerMap[providerRequest.Provider].
-			Keys(providerRequest.GcpProject, includeInactiveKeys); err != nil {
+			Keys(providerRequest.GcpProject, includeInactiveKeys, providerRequest.Token); err != nil {
 			return
 		}
 		keys = appendSlice(keys, providerKeys)
