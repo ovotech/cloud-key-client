@@ -87,7 +87,7 @@ func keyFromGcpKey(gcpKey *gcpiam.ServiceAccountKey, project string) (key Key, e
 		math.Abs(time.Since(expiryTime).Minutes()),
 		strings.Join([]string{serviceAccountName,
 			keyID[len(keyID)-numIDValuesInName:]}, "_"),
-		Provider{Provider: gcpProviderString, GcpProject: project, Token: ""},
+		Provider{Provider: gcpProviderString, GcpProject: project},
 		"Active",
 	}
 	return

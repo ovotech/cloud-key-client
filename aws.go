@@ -49,7 +49,7 @@ func (a AwsKey) Keys(project string, includeInactiveKeys bool, token string) (ke
 					0,
 					strings.Join([]string{*awsKey.UserName,
 						keyID[len(keyID)-numIDValuesInName:]}, "_"),
-					Provider{Provider: awsProviderString, GcpProject: "", Token: ""},
+					Provider{Provider: awsProviderString},
 					*awsKey.Status,
 				})
 			}
