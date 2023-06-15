@@ -10,8 +10,8 @@ import (
 //ProviderInterface type
 type ProviderInterface interface {
 	Keys(project string, includeInactiveKeys bool, token string) (keys []Key, err error)
-	CreateKey(project, account string) (keyID, newKey string, err error)
-	DeleteKey(project, account, keyID string) (err error)
+	CreateKey(project, account, token string) (keyID, newKey string, err error)
+	DeleteKey(project, account, keyID, token string) (err error)
 }
 
 //Key type
@@ -75,7 +75,7 @@ func Keys(providers []Provider, includeInactiveKeys bool) (keys []Key, err error
 //CreateKeyFromScratch creates a new key from just provider and account
 //parameters (an existing key is not required)
 func CreateKeyFromScratch(provider Provider, account string) (string, string, error) {
-	return providerMap[provider.Provider].CreateKey(provider.GcpProject, account)
+	return providerMap[provider.Provider].CreateKey(provider.GcpProject, account, provider.Token)
 }
 
 //CreateKey creates a new key using details of the provided key
@@ -85,7 +85,7 @@ func CreateKey(key Key) (string, string, error) {
 
 //DeleteKey deletes the specified key
 func DeleteKey(key Key) error {
-	return providerMap[key.Provider.Provider].DeleteKey(key.Provider.GcpProject, key.FullAccount, key.ID)
+	return providerMap[key.Provider.Provider].DeleteKey(key.Provider.GcpProject, key.FullAccount, key.ID, key.Provider.Token)
 }
 
 //appendSlice appends the 2nd slice to the 1st, and returns the resulting slice

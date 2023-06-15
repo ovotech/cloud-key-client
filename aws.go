@@ -59,7 +59,7 @@ func (a AwsKey) Keys(project string, includeInactiveKeys bool, token string) (ke
 }
 
 //CreateKey creates a key in the provided account
-func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err error) {
+func (a AwsKey) CreateKey(project, account, token string) (keyID, newKey string, err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
@@ -87,7 +87,7 @@ func (a AwsKey) CreateKey(project, account string) (keyID, newKey string, err er
 }
 
 //DeleteKey deletes the specified key from the specified account
-func (a AwsKey) DeleteKey(project, account, keyID string) (err error) {
+func (a AwsKey) DeleteKey(project, account, keyID, token string) (err error) {
 	var svc *awsiam.IAM
 	if svc, err = iamService(); err != nil {
 		return
