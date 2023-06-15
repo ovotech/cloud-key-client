@@ -60,7 +60,10 @@ type RevokeTokenResponse struct {
 // Generic functions for sending an HTTP request
 func doGenericHTTPReq(method, url, token string, payload io.Reader) (body []byte, err error) {
 	client := http.Client{}
-	req, _ := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, url, payload)
+	if err != nil {
+		return
+	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	resp, err := client.Do(req)
 	if err != nil {
