@@ -13,6 +13,7 @@ import (
 )
 
 const aivenTokenEndpoint string = "https://api.aiven.io/v1/access_token"
+const fullAccountSeparator string = ":"
 
 // AivenKey type
 type AivenKey struct{}
@@ -145,16 +146,13 @@ func status(currentlyActive bool) string {
 }
 
 // Get the description of a key/token from a 'fullAccount' identifier
-func tokenDescriptionFromFullAccount(account string) string {
-	splitAccount := strings.Split(account, "-")
-	tokenPrefix := splitAccount[0]
-	return account[len(tokenPrefix)+1:]
-}
-
-// Get the prefix of a key/token from a 'fullAccount' identifier
-func tokenPrefixFromFullAccount(account string) string {
-	splitAccount := strings.Split(account, "-")
-	return splitAccount[0]
+func tokenPrefixDescriptionFromFullAccount(account string) (tokenPrefix, tokenDescription string, err error) {
+	tokenPrefix, tokenDescription, found := strings.Cut(account, fullAccountSeparator)
+	if !found {
+		err = fmt.Errorf("Separator %s not found in fullAccount: %s", fullAccountSeparator, account)
+		return
+	}
+	return
 }
 
 // Keys returns a slice of keys (or tokens in this case) for the user who
@@ -177,7 +175,7 @@ func (a AivenKey) Keys(project string, includeInactiveKeys bool, apiToken string
 		// we use to track tokens down that are configured for rotation)
 		if token.Description != "" {
 			key := Key{
-				FullAccount: fmt.Sprintf("%s-%s", token.TokenPrefix, token.Description),
+				FullAccount: fmt.Sprintf("%s%s%s", token.TokenPrefix, fullAccountSeparator, token.Description),
 				Age:         time.Since(createTime).Minutes(),
 				ID:          token.TokenPrefix,
 				Name:        token.Description,
@@ -192,7 +190,14 @@ func (a AivenKey) Keys(project string, includeInactiveKeys bool, apiToken string
 
 // CreateKey creates a new Aiven API token
 func (a AivenKey) CreateKey(project, account, token string) (keyID string, newKey string, err error) {
-	description := tokenDescriptionFromFullAccount(account)
+	if account == "" {
+		err = errors.New("The account string is empty; this is required to explicitly define which keys/tokens to interact with")
+		return
+	}
+	_, description, err := tokenPrefixDescriptionFromFullAccount(account)
+	if err != nil {
+		return
+	}
 	ctr, err := createTokenResponse(token, description)
 	if err != nil {
 		return
@@ -208,7 +213,10 @@ func (a AivenKey) CreateKey(project, account, token string) (keyID string, newKe
 
 // DeleteKey deletes the specified Aiven API token
 func (a AivenKey) DeleteKey(project, account, keyID, token string) (err error) {
-	tokenPrefix := tokenPrefixFromFullAccount(account)
+	tokenPrefix, _, err := tokenPrefixDescriptionFromFullAccount(account)
+	if err != nil {
+		return
+	}
 	rtr, err := revokeTokenResponse(tokenPrefix, token)
 	if err != nil {
 		return
