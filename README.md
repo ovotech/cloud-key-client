@@ -1,16 +1,15 @@
 # Cloud-Key-Client
- [![CircleCI](https://circleci.com/gh/ovotech/cloud-key-client.svg?style=svg&circle-token=4a7b48b664bf017b6256234f5de24c5b70c54168)](https://circleci.com/gh/ovotech/cloud-key-client)
+
+[![CircleCI](https://circleci.com/gh/ovotech/cloud-key-client.svg?style=svg&circle-token=4a7b48b664bf017b6256234f5de24c5b70c54168)](https://circleci.com/gh/ovotech/cloud-key-client)
 
 Cloud-Key-Client is a Golang client that connects up to cloud providers either
 to collect details of Service Account keys, or manipulate them.
-
 
 ## Install as a Go Dependency
 
 ```go
 go get -u github.com/ovotech/cloud-key-client
 ```
-
 
 ## Getting Started
 
@@ -36,10 +35,16 @@ func main() {
 		// no need to specify any account ID here
 		Provider: "aws",
 	}
+	// create an Aiven provider
+	aivenProvider := keys.Provider{
+		Provider: "aiven",
+		Token: "my-aiven-api-token"
+	}
 
 	// add both providers to the slice
 	providers = append(providers, gcpProvider)
 	providers = append(providers, awsProvider)
+	providers = append(providers, aivenProvider)
 
 	// use the cloud-key-client
 	keys, err := keys.Keys(providers, true)
@@ -59,17 +64,17 @@ func main() {
 
 ## Purpose
 
-This client could be useful for obtaining key metadata, such as age, and 
-performing create and delete operations for key rotation. Multiple providers 
+This client could be useful for obtaining key metadata, such as age, and
+performing create and delete operations for key rotation. Multiple providers
 can be accessed through a single interface.
-
 
 ## Integrations
 
 The following cloud providers have been integrated:
 
-* AWS
-* GCP
+- AWS
+- Aiven
+- GCP
 
 No config is required, you simply need to pass a slice of `Provider` structs to
 the `keys()` func.

@@ -19,7 +19,7 @@ type GcpKey struct{}
 const gcpAccessKeyLimit = 10
 
 //Keys returns a slice of keys from any authorised accounts
-func (g GcpKey) Keys(project string, includeInactiveKeys bool) (keys []Key, err error) {
+func (g GcpKey) Keys(project string, includeInactiveKeys bool, token string) (keys []Key, err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
 	}
@@ -87,14 +87,14 @@ func keyFromGcpKey(gcpKey *gcpiam.ServiceAccountKey, project string) (key Key, e
 		math.Abs(time.Since(expiryTime).Minutes()),
 		strings.Join([]string{serviceAccountName,
 			keyID[len(keyID)-numIDValuesInName:]}, "_"),
-		Provider{gcpProviderString, project},
+		Provider{Provider: gcpProviderString, GcpProject: project},
 		"Active",
 	}
 	return
 }
 
 //CreateKey creates a key in the provided account
-func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err error) {
+func (g GcpKey) CreateKey(project, account, token string) (keyID, newKey string, err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
 	}
@@ -126,7 +126,7 @@ func (g GcpKey) CreateKey(project, account string) (keyID, newKey string, err er
 }
 
 //DeleteKey deletes the specified key from the specified account
-func (g GcpKey) DeleteKey(project, account, keyID string) (err error) {
+func (g GcpKey) DeleteKey(project, account, keyID, token string) (err error) {
 	if err = validateGcpProjectString(project); err != nil {
 		return
 	}
