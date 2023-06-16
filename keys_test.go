@@ -34,11 +34,11 @@ func TestSubstring(t *testing.T) {
 func TestAppendSlice(t *testing.T) {
 	sliceOne := make([]Key, 0)
 	accountOne := "account-one"
-	keyOne := Key{accountOne, "", 0, "", 1, "", Provider{"", ""}, "Active"}
+	keyOne := Key{accountOne, "", 0, "", 1, "", Provider{"", "", ""}, "Active"}
 	sliceOne = append(sliceOne, keyOne)
 	sliceTwo := make([]Key, 0)
 	accountTwo := "account-two"
-	keyTwo := Key{accountTwo, "", 2, "", 3, "", Provider{"", ""}, "Active"}
+	keyTwo := Key{accountTwo, "", 2, "", 3, "", Provider{"", "", ""}, "Active"}
 	sliceTwo = append(sliceTwo, keyTwo)
 	appendedSlice := appendSlice(sliceOne, sliceTwo)
 
