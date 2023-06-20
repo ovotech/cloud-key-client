@@ -173,12 +173,15 @@ func (a AivenKey) Keys(project string, includeInactiveKeys bool, apiToken string
 		}
 		// ignore the token if it has no description (this is the identifier
 		// we use to track tokens down that are configured for rotation)
-		if token.Description != "" {
+		tokenDesc := token.Description
+		tokenPrefix := token.TokenPrefix
+		if tokenDesc != "" {
 			key := Key{
-				FullAccount: fmt.Sprintf("%s%s%s", token.TokenPrefix, fullAccountSeparator, token.Description),
+				Account:     tokenDesc,
+				FullAccount: fmt.Sprintf("%s%s%s", tokenPrefix, fullAccountSeparator, tokenDesc),
 				Age:         time.Since(createTime).Minutes(),
-				ID:          token.TokenPrefix,
-				Name:        token.Description,
+				ID:          tokenPrefix,
+				Name:        tokenDesc,
 				Provider:    Provider{Provider: aivenProviderString, Token: apiToken},
 				Status:      status(token.CurrentlyActive),
 			}
