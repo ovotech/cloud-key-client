@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -220,6 +221,9 @@ func (a AivenKey) DeleteKey(project, account, keyID, token string) (err error) {
 	if err != nil {
 		return
 	}
+	// tokenPrefix is used in the path in the call to Aiven API, some chars
+	// need escaping otherwise they'll cause a 404
+	tokenPrefix = url.PathEscape(tokenPrefix)
 	rtr, err := revokeTokenResponse(tokenPrefix, token)
 	if err != nil {
 		return
