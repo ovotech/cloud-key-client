@@ -3,7 +3,7 @@ module github.com/ovotech/cloud-key-client
 go 1.18
 
 require (
-	github.com/aws/aws-sdk-go v1.45.2
+	github.com/aws/aws-sdk-go v1.45.19
 	go.uber.org/zap v1.24.0
 	golang.org/x/oauth2 v0.12.0
 	google.golang.org/api v0.139.0
